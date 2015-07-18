@@ -108,7 +108,9 @@ private:
     static void Xor(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void Or(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void And(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     static void Not(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void Abs(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void Negate(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     static void GreaterThan(const v8::FunctionCallbackInfo<v8::Value>& args);

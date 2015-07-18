@@ -31,6 +31,7 @@ void Int64Wrapper::Init(Handle<Object> exports) {
     NODE_SET_PROTOTYPE_METHOD(tpl, "and", Int64Wrapper::And);
 
     NODE_SET_PROTOTYPE_METHOD(tpl, "neg", Int64Wrapper::Negate);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "abs", Int64Wrapper::Abs);
     NODE_SET_PROTOTYPE_METHOD(tpl, "not", Int64Wrapper::Not);
 
     NODE_SET_PROTOTYPE_METHOD(tpl, "gt", Int64Wrapper::GreaterThan);
@@ -143,6 +144,17 @@ void Int64Wrapper::Not(const FunctionCallbackInfo<Value>& args) {
         return !self.val;
     }, args);
 }
+
+void Int64Wrapper::Abs(const FunctionCallbackInfo<Value>& args) {
+    wrapUnaryOp([](const Int64Wrapper& self) -> uint64_t {
+        if (self.val > 0) {
+            return self.val;
+        } else {
+            return -self.val;
+        }
+    }, args);
+}
+
 
 void Int64Wrapper::Negate(const FunctionCallbackInfo<Value>& args) {
     wrapUnaryOp([](const Int64Wrapper& self) -> uint64_t {
