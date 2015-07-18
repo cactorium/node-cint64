@@ -1,8 +1,8 @@
 {
   "name": "node-cint64",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Providing native 64-bit integer arithmetic for Node!",
-  "main": "./build/Release/cint64",
+  "main": "./build/Release/node-cint64",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
