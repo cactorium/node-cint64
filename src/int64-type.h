@@ -42,10 +42,16 @@ private:
 			return;
 		}
 
-		Int64Wrapper* result = new Int64Wrapper(f(*self, *other));
+		const int64_t result = f(*self, *other);
 		
-		v8::Local<v8::Object> ret = v8::Object::New(isolate);
-		result->Wrap(ret);
+		constexpr unsigned argc = 1;
+		v8::Handle<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
+
+		auto cons = v8::Local<v8::Function>::New(isolate, constructor);
+		auto ret = cons->NewInstance(argc, argv);
+
+		Int64Wrapper* retInner = ObjectWrap::Unwrap<Int64Wrapper>(ret);
+		retInner->val = result;
 		args.GetReturnValue().Set(ret);
 	}
 
@@ -55,10 +61,16 @@ private:
 		v8::HandleScope scope(isolate);
 
 		Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
-		Int64Wrapper* result = new Int64Wrapper(f(*self));
+		const int64_t result = f(*self);
 		
-		v8::Local<v8::Object> ret = v8::Object::New(isolate);
-		result->Wrap(ret);
+		constexpr unsigned argc = 1;
+		v8::Handle<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
+
+		auto cons = v8::Local<v8::Function>::New(isolate, constructor);
+		auto ret = cons->NewInstance(argc, argv);
+
+		Int64Wrapper* retInner = ObjectWrap::Unwrap<Int64Wrapper>(ret);
+		retInner->val = result;
 		args.GetReturnValue().Set(ret);
 	}
 
@@ -74,7 +86,7 @@ private:
 	static void And(const v8::FunctionCallbackInfo<v8::Value>& args);
 	static void Not(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-	// static void ToNumber(const v8::FunctionCallbackInfo<v8::Value>& args);
+	static void ToNumber(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 	int64_t val;
 };

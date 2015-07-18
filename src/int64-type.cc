@@ -14,11 +14,23 @@ void Int64Wrapper::Init(Handle<Object> exports) {
 	tpl->SetClassName(String::NewFromUtf8(isolate, "Int64"));
 	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-	// TODO: add methods here
+	// add methods here
 	NODE_SET_PROTOTYPE_METHOD(tpl, "add", Int64Wrapper::Add);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "sub", Int64Wrapper::Subtract);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "mul", Int64Wrapper::Multiply);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "div", Int64Wrapper::Divide);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "shiftLeft", Int64Wrapper::ShiftLeft);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "shiftRight", Int64Wrapper::ShiftRight);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "xor", Int64Wrapper::Xor);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "or", Int64Wrapper::Or);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "and", Int64Wrapper::And);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "not", Int64Wrapper::Not);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "toNumber", Int64Wrapper::ToNumber);
 
+	// set the constructor so we can use it
 	constructor.Reset(isolate, tpl->GetFunction());
 
+	// set the prototype so it can be used for typechecking
 	Local<Object> obj = tpl->GetFunction()->NewInstance();
 	prototype.Reset(isolate, obj->GetPrototype());
 
@@ -42,7 +54,7 @@ void Int64Wrapper::New(const FunctionCallbackInfo<Value> &args) {
 
 	uint64_t val = 0;
 	if (args.Length() > 0) {
-		val = !args[0]->IsUndefined()? 0 : args[0]->NumberValue();
+		val = args[0]->IsUndefined()? 0 : args[0]->NumberValue();
 	}
 
 	Int64Wrapper* obj = new Int64Wrapper(val);
@@ -103,3 +115,10 @@ void Int64Wrapper::Not(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	}, args);
 }
 
+void Int64Wrapper::ToNumber(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	HandleScope scope(isolate);
+
+	Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
+	args.GetReturnValue().Set(Number::New(isolate, (double) self->val));
+}
