@@ -1,0 +1,11 @@
+{
+  "name": "node-cint64",
+  "version": "0.0.1",
+  "description": "Providing native 64-bit integer arithmetic for Node!",
+  "main": "./build/Release/cint64",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kelvin Ly",
+  "license": "MIT"
+}
