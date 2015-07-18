@@ -102,6 +102,7 @@ private:
     static void Subtract(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void Multiply(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void Divide(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void Modulo(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void ShiftLeft(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void ShiftRight(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void Xor(const v8::FunctionCallbackInfo<v8::Value>& args);

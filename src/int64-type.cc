@@ -23,6 +23,7 @@ void Int64Wrapper::Init(Handle<Object> exports) {
     NODE_SET_PROTOTYPE_METHOD(tpl, "sub", Int64Wrapper::Subtract);
     NODE_SET_PROTOTYPE_METHOD(tpl, "mul", Int64Wrapper::Multiply);
     NODE_SET_PROTOTYPE_METHOD(tpl, "div", Int64Wrapper::Divide);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "mod", Int64Wrapper::Modulo);
     NODE_SET_PROTOTYPE_METHOD(tpl, "shiftLeft", Int64Wrapper::ShiftLeft);
     NODE_SET_PROTOTYPE_METHOD(tpl, "shiftRight", Int64Wrapper::ShiftRight);
     NODE_SET_PROTOTYPE_METHOD(tpl, "xor", Int64Wrapper::Xor);
@@ -104,6 +105,11 @@ void Int64Wrapper::Multiply(const FunctionCallbackInfo<Value>& args) {
 void Int64Wrapper::Divide(const FunctionCallbackInfo<Value>& args) {
     wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
         return self.val / other.val;
+    }, args);
+}
+void Int64Wrapper::Modulo(const FunctionCallbackInfo<Value>& args) {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+        return self.val % other.val;
     }, args);
 }
 void Int64Wrapper::ShiftLeft(const FunctionCallbackInfo<Value>& args) {
