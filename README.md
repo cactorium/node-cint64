@@ -20,7 +20,7 @@ var a = new Int64(7);
 var b = new Int64(4294967295).shiftLeft(32).or(new Int64(4294967295)); // === -1
 
 // All instructions currently allocate a new int64 instead of modifying the
-// existing value. This might be changed in the future.
+// existing value. New methods may be added that modify an existing Int64 Object
 
 // All unary operations are Int64 methods that take no arguments and return
 // a new Int64 object containing the result
@@ -95,5 +95,5 @@ e = c.toString(10); // e === '1'
 ```
 
 ## TODOS
-- Add tests
+- Add more tests
 - Integrate with Travis CI
