@@ -43,6 +43,7 @@ void Int64Wrapper::Init(Handle<Object> exports) {
 
     NODE_SET_PROTOTYPE_METHOD(tpl, "toString", Int64Wrapper::ToString);
     NODE_SET_PROTOTYPE_METHOD(tpl, "toNumber", Int64Wrapper::ToNumber);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "intoBuffer", Int64Wrapper::IntoBuffer);
 
     // set the constructor so we can use it
     constructor.Reset(isolate, tpl->GetFunction());
@@ -54,7 +55,7 @@ void Int64Wrapper::Init(Handle<Object> exports) {
     exports->Set(String::NewFromUtf8(isolate, "Int64"), tpl->GetFunction());
 }
 
-Int64Wrapper::Int64Wrapper(int v) : val(v) {}
+Int64Wrapper::Int64Wrapper(int64_t v) : val(v) {}
 Int64Wrapper::~Int64Wrapper() {}
 
 void Int64Wrapper::New(const FunctionCallbackInfo<Value> &args) {
@@ -69,13 +70,15 @@ void Int64Wrapper::New(const FunctionCallbackInfo<Value> &args) {
         return;
     }
 
-    uint64_t val = 0;
+    int64_t val = 0;
     if (args.Length() > 0) {
         if (node::Buffer::HasInstance(args[0])) {
-            auto data = node::Buffer::Data(args[0]);
-            auto len = node::Buffer::Length(args[0]);
-            for (size_t i = 0; i < len && i < sizeof(val); i++) {
-                val = val | data[i] << (i << 3);
+            const char* data = node::Buffer::Data(args[0]);
+            size_t len = node::Buffer::Length(args[0]);
+            for (size_t i = 0; i < len && i < 8; i++) {
+                // Cast to unsigned first so it doesn't get sign extended
+                auto tmp = static_cast<int64_t>(static_cast<unsigned char> (data[i]));
+                val = val | (tmp << (i << 3));
             }
         } else {
             val = args[0]->IsUndefined()? 0 : args[0]->NumberValue();
@@ -89,64 +92,64 @@ void Int64Wrapper::New(const FunctionCallbackInfo<Value> &args) {
 }
 
 void Int64Wrapper::Add(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val + other.val;
     }, args);
 }
 void Int64Wrapper::Subtract(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val - other.val;
     }, args);
 }
 void Int64Wrapper::Multiply(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val * other.val;
     }, args);
 }
 void Int64Wrapper::Divide(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val / other.val;
     }, args);
 }
 void Int64Wrapper::Modulo(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val % other.val;
     }, args);
 }
 void Int64Wrapper::ShiftLeft(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val << other.val;
     }, args);
 }
 void Int64Wrapper::ShiftRight(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val >> other.val;
     }, args);
 }
 void Int64Wrapper::Xor(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val ^ other.val;
     }, args);
 }
 void Int64Wrapper::Or(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val | other.val;
     }, args);
 }
 void Int64Wrapper::And(const FunctionCallbackInfo<Value>& args) {
-    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> uint64_t {
+    wrapBinaryOp([](const Int64Wrapper& self, const Int64Wrapper& other) -> int64_t {
         return self.val & other.val;
     }, args);
 }
 
 void Int64Wrapper::Not(const FunctionCallbackInfo<Value>& args) {
-    wrapUnaryOp([](const Int64Wrapper& self) -> uint64_t {
+    wrapUnaryOp([](const Int64Wrapper& self) -> int64_t {
         return !self.val;
     }, args);
 }
 
 void Int64Wrapper::Abs(const FunctionCallbackInfo<Value>& args) {
-    wrapUnaryOp([](const Int64Wrapper& self) -> uint64_t {
+    wrapUnaryOp([](const Int64Wrapper& self) -> int64_t {
         if (self.val > 0) {
             return self.val;
         } else {
@@ -157,7 +160,7 @@ void Int64Wrapper::Abs(const FunctionCallbackInfo<Value>& args) {
 
 
 void Int64Wrapper::Negate(const FunctionCallbackInfo<Value>& args) {
-    wrapUnaryOp([](const Int64Wrapper& self) -> uint64_t {
+    wrapUnaryOp([](const Int64Wrapper& self) -> int64_t {
         return -self.val;
     }, args);
 }
@@ -255,4 +258,63 @@ void Int64Wrapper::ToString(const FunctionCallbackInfo<Value>& args) {
     }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, res));
+}
+
+void Int64Wrapper::IntoBuffer(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    HandleScope scope(isolate);
+
+    const Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
+    if (!node::Buffer::HasInstance(args[0])) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                        isolate, "first argument must be a Buffer")));
+        return;
+    }
+
+    size_t dstOffset = 0, srcOffset = 0, srcEnd = 8;
+
+    if (args.Length() > 1) {
+        if (args[1]->IsNumber()) {
+            auto argDstOffset = args[1]->ToInteger()->Value();
+            if (argDstOffset > 0) {
+                dstOffset = argDstOffset;
+            }
+        } else {
+            isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                        isolate, "second argument must be a Number")));
+            return;
+        }
+    }
+
+    if (args.Length() > 2) {
+        if (args[2]->IsNumber()) {
+            auto argSrcOffset = args[2]->ToInteger()->Value();
+            if (argSrcOffset > 0) {
+                srcOffset = argSrcOffset;
+            }
+        } else {
+            isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                        isolate, "third argument must be a Number")));
+            return;
+        }
+    }
+
+    if (args.Length() > 3) {
+        if (args[3]->IsNumber()) {
+            srcEnd = args[3]->ToInteger()->Value();
+        } else {
+            isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                        isolate, "third argument must be a Number")));
+            return;
+        }
+    }
+
+    const int64_t mask = 0x00000000000000ff;
+    const size_t bufLen = node::Buffer::Length(args[0]);
+    char* target = node::Buffer::Data(args[0]);
+
+    for (size_t i = 0; i < (srcEnd - srcOffset) && (i + dstOffset) < bufLen; i++) {
+        int64_t tmp = self->val & (mask << ((i + srcOffset) << 3));
+        target[dstOffset + i] = static_cast<char>(tmp >> ((i + srcOffset) << 3));
+    }
 }

@@ -13,7 +13,7 @@ public:
 
 private:
     static v8::Persistent<v8::Value> prototype;
-    explicit Int64Wrapper(int v);
+    explicit Int64Wrapper(int64_t v);
     ~Int64Wrapper();
 
     static void New(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -122,6 +122,7 @@ private:
 
     static void ToNumber(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void ToString(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void IntoBuffer(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     int64_t val;
 };

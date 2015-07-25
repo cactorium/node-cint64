@@ -78,5 +78,60 @@ describe('Int64', function() {
         });
     });
 
+    describe('#intoBuffer()', function() {
+        it('should copy the integer into a Buffer', function() {
+            var a = new Buffer([-3, -2, -1, 0, 1, 2, 3, 4]);
+            var b = new Buffer(8);
+            var testInt = new Int64(a);
+            testInt.intoBuffer(b);
+            for (var i = 0; i < a.length && i < b.length; i++) {
+                assert.equal(b[i], a[i]);
+            }
+        });
+        it('should not write outside of the Buffer', function() {
+            var a = new Buffer([4, 3, 2, 1, 0, -1, -2, -3]);
+            var b = new Buffer(7);
+            var testInt = new Int64(a);
+            testInt.intoBuffer(b);
+            // This shouldn't crash, essentially
+            for (var i = 0; i < a.length && i < b.length; i++) {
+                assert.equal(b[i], a[i]);
+            }
+        });
+        it('should write starting at an offset if given one', function() {
+            var a = new Buffer([-3, -2, -1, 0, 1, 2, 3, 4]);
+            var b = new Buffer(17);
+            var testInt = new Int64(a);
+            testInt.intoBuffer(b);
+            testInt.intoBuffer(b, 9);
+            // This shouldn't crash, essentially
+            for (var i = 0; i < a.length; i++) {
+                assert.equal(b[i], a[i]);
+                assert.equal(b[i+9], a[i]);
+            }
+        });
+        it('should only write the bytes given in the source range', function() {
+            // var a = new Buffer([4, 3, 2, 1, 0, -1, -2, -3]);
+            var a = new Buffer([-3, -2, -1, 0, 1, 2, 3, 4]);
+            var b = new Buffer(4);
+            var testInt = new Int64(a);
+            testInt.intoBuffer(b, 0, 4, 8);
+            for (var i = 0; i < b.length; i++) {
+                assert.equal(b[i], a[i+4]);
+            }
+        });
+        it('should only write the bytes given in the source range', function() {
+            // var a = new Buffer([4, 3, 2, 1, 0, -1, -2, -3]);
+            var a = new Buffer([-3, -2, -1, 0, 1, 2, 3, 4]);
+            var b = new Buffer(4);
+            b[0] = 100;
 
+            var testInt = new Int64(a);
+            testInt.intoBuffer(b, 1, 4, 7);
+            for (var i = 0; i < 3; i++) {
+                assert.equal(b[i+1], a[i+4]);
+            }
+            assert.equal(b[0], 100);
+        });
+    });
 });
