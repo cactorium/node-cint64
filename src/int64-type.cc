@@ -276,9 +276,12 @@ void Int64Wrapper::IntoBuffer(const FunctionCallbackInfo<Value>& args) {
     if (args.Length() > 1) {
         if (args[1]->IsNumber()) {
             auto argDstOffset = args[1]->ToInteger()->Value();
-            if (argDstOffset > 0) {
-                dstOffset = argDstOffset;
+            if (argDstOffset < 0) {
+                isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                    isolate, "second argument must be greater than or equal to zero")));
+                return;
             }
+            dstOffset = argDstOffset;
         } else {
             isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                         isolate, "second argument must be a Number")));
@@ -289,9 +292,12 @@ void Int64Wrapper::IntoBuffer(const FunctionCallbackInfo<Value>& args) {
     if (args.Length() > 2) {
         if (args[2]->IsNumber()) {
             auto argSrcOffset = args[2]->ToInteger()->Value();
-            if (argSrcOffset > 0) {
-                srcOffset = argSrcOffset;
+            if (argSrcOffset < 0) {
+                isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                            isolate, "third argument must be greater than or equal to zero")));
+                return;
             }
+            srcOffset = argSrcOffset;
         } else {
             isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                         isolate, "third argument must be a Number")));

@@ -79,6 +79,7 @@ describe('Int64', function() {
     });
 
     describe('#intoBuffer()', function() {
+        // TODO: Refactor out initialization code
         it('should copy the integer into a Buffer', function() {
             var a = new Buffer([-3, -2, -1, 0, 1, 2, 3, 4]);
             var b = new Buffer(8);
@@ -132,6 +133,16 @@ describe('Int64', function() {
                 assert.equal(b[i+1], a[i+4]);
             }
             assert.equal(b[0], 100);
+        });
+        it('should range check its inputs', function() {
+            var testInt = new Int64(7);
+            var b = new Buffer(0);
+            assert.throws(function() {
+                testInt.intoBuffer(b, -1);
+            }, TypeError);
+            assert.throws(function() {
+                testInt.intoBuffer(b, 0, -1);
+            }, TypeError);
         });
     });
 });

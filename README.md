@@ -92,8 +92,36 @@ e = c.toNumber(); // e === 1
 // if negative, there will be a negative sign prepended to it.
 e = c.toString(10); // e === '1'
 
+
+// intoBuffer() is kind of complicated, so here's its type signature:
+// #intoBuffer(Buffer b, [number dstStart, [number srcStart, [number srcEnd]])
+// intoBuffer() copies the int64's bytes into the Buffer passed as b. It is
+// modelled Buffer#copy(), and returns a TypeError whenever an invalid argument
+// is passed in
+
+var f = new Int64(new Buffer([0, 1, 2, 3, 4, 5, 6, 7]));
+var buf = new Buffer(8);
+c.intoBuffer(buf); // buf now contains the bytes from c in little-endian order
+// buf = [0, 1, 2, 3, 4, 5, 6, 7]
+
+// dstStart, if it is included, will set the position of the
+// first byte copied into the target buffer. It defaults to zero.
+buf.fill(0);
+c.intoBuffer(buf, 1); // buf = [0, 0, 1, 2, 3, 4, 5, 6]
+
+// srcStart, if it is included, will set the first byte of the int64 that will
+// be copied into the buffer.
+buf.fill(0);
+c.intoBuffer(buf, 0, 3); // buf = [3, 4, 5, 6, 7, 0, 0, 0]
+
+// srcEnd, if it is included, determines the last byte as (srcEnd-1), so that
+// srcEnd - srcStart bytes, starting at srcStart are copied
+b.fill(0);
+c.intoBuffer(buf, 0, 0, 3); // buf = [0, 1, 2, 0, 0, 0, 0, 0]
+
 ```
 
 ## TODOS
 - Add more tests
+- Determine the lowest version of Node this will compile under
 - Integrate with Travis CI
