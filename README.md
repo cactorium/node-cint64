@@ -96,8 +96,8 @@ e = c.toString(10); // e === '1'
 // intoBuffer() is kind of complicated, so here's its type signature:
 // #intoBuffer(Buffer b, [number dstStart, [number srcStart, [number srcEnd]])
 // intoBuffer() copies the int64's bytes into the Buffer passed as b. It is
-// modelled Buffer#copy(), and returns a TypeError whenever an invalid argument
-// is passed in
+// modelled after Buffer#copy(), and throws a TypeError whenever an invalid
+// argument is passed in.
 
 var f = new Int64(new Buffer([0, 1, 2, 3, 4, 5, 6, 7]));
 var buf = new Buffer(8);
@@ -117,7 +117,7 @@ c.intoBuffer(buf, 0, 3); // buf = [3, 4, 5, 6, 7, 0, 0, 0]
 // srcEnd, if it is included, determines the last byte as (srcEnd-1), so that
 // srcEnd - srcStart bytes, starting at srcStart are copied
 b.fill(0);
-c.intoBuffer(buf, 0, 0, 3); // buf = [0, 1, 2, 0, 0, 0, 0, 0]
+c.intoBuffer(buf, 0, 0, 4); // buf = [0, 1, 2, 0, 0, 0, 0, 0]
 
 ```
 
