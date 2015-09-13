@@ -124,5 +124,3 @@ c.intoBuffer(buf, 0, 0, 4); // buf = [0, 1, 2, 0, 0, 0, 0, 0]
 
 ## TODOS
 - Add more tests
-- Determine the lowest version of Node this will compile under
-- Integrate with Travis CI
