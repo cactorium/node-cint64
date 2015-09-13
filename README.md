@@ -1,6 +1,6 @@
 # node-cint64
 [![Build Status](https://travis-ci.org/cactorium/node-cint64.svg?branch=master)](https://travis-ci.org/cactorium/node-cint64)
-64-bit native signed integers for Node! I think
+64-bit native signed integers for Node 0.10 and newer! I think
 we currently support most if not all native operations. This uses a C++ addon
 wrapping a `int64_t` to provide exact C++ specified operations.
 
