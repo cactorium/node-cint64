@@ -31,11 +31,13 @@ private:
         }
         const Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
         const Int64Wrapper* other;
+        bool isAllocated = false;
 
         if (args[0]->IsObject() && args[0]->ToObject()->GetPrototype() == prototype) {
             other = ObjectWrap::Unwrap<Int64Wrapper>(args[0]->ToObject());
         } else if (args[0]->IsNumber()) {
             other = new Int64Wrapper(args[0]->ToInteger()->Value());
+            isAllocated = true;
         } else {
             isolate->ThrowException(v8::Exception::TypeError(
                         v8::String::NewFromUtf8(isolate, "argument must be a number or a int64 object"))
@@ -44,6 +46,9 @@ private:
         }
 
         const int64_t result = f(*self, *other);
+        if (isAllocated) {
+          delete other;
+        }
         
         constexpr unsigned argc = 1;
         v8::Handle<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
@@ -82,11 +87,13 @@ private:
 
         const Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
         const Int64Wrapper* other;
+        bool isAllocated = false;
 
         if (args[0]->IsObject() && args[0]->ToObject()->GetPrototype() == prototype) {
             other = ObjectWrap::Unwrap<Int64Wrapper>(args[0]->ToObject());
         } else if (args[0]->IsNumber()) {
             other = new Int64Wrapper(args[0]->ToInteger()->Value());
+            isAllocated = true;
         } else {
             isolate->ThrowException(v8::Exception::TypeError(
                         v8::String::NewFromUtf8(isolate, "argument must be a number or a int64 object"))
@@ -95,6 +102,9 @@ private:
         }
 
         const bool result = f(*self, *other);
+        if (isAllocated) {
+          delete other;
+        }
         args.GetReturnValue().Set(v8::Boolean::New(isolate, result));
     }
 

@@ -16,6 +16,10 @@
     "mocha": "^2.2.5"
   },
   "keywords": [
-    "integer", "int64", "native", "64-bit", "math"
+    "integer",
+    "int64",
+    "native",
+    "64-bit",
+    "math"
   ]
 }
