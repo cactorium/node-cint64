@@ -1,8 +1,10 @@
 # node-cint64
 [![Build Status](https://travis-ci.org/cactorium/node-cint64.svg?branch=master)](https://travis-ci.org/cactorium/node-cint64)
-64-bit native signed integers for Node 0.11 and newer! I think
+64-bit native signed integers for Node 6 and newer! I think
 we currently support most if not all native operations. This uses a C++ addon
-wrapping a `int64_t` to provide exact C++ specified operations.
+wrapping a `int64_t` to provide exact C++ specified semantics.
+
+* NOTE: Node 5 and older are now unsupported! The latest version that should work with those is 1.1.3 *
 
 ## Installation
 `npm install node-cint64`
@@ -33,16 +35,11 @@ var c = new Int64(1);
 var d = new Int64(2);
 
 // shiftLeft() does a signed left shift.
-// NOTE: C++ seems to have a wrap around on the shift parameter so that
-// a.shiftLeft(64) returns the original number
 e = c.shiftLeft(1); // e == c << 1 = 2
-e = c.shiftLeft(64); // e == c << 64 = 1
-e = c.shiftLeft(65); // e == c << 1 = 2 again
+e = c.shiftLeft(2); // e == c << 2 = 4
 
-// shiftRight() does a signed right shift. This appears to have the same wraparound
-// as shiftLeft()
+// shiftRight() does a signed right shift
 e = c.shiftRight(1); // e == c >> 1 = 0
-e = c.shiftRight(65); // e == c >> 65 = 0 again
 
 // not() returns an inverted version of the original number
 var e = c.not(); // e == ~c == -2
