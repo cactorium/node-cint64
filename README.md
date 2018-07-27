@@ -4,7 +4,7 @@
 we currently support most if not all native operations. This uses a C++ addon
 wrapping a `int64_t` to provide exact C++ specified semantics.
 
-* NOTE: Node 5 and older are now unsupported! The latest version that should work with those is 1.1.3 *
+**NOTE: Node 5 and older are now unsupported! The latest version that should work with those is 1.1.3**
 
 ## Installation
 `npm install node-cint64`
