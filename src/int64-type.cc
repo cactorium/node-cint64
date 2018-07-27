@@ -49,7 +49,8 @@ void Int64Wrapper::Init(Handle<Object> exports) {
     constructor.Reset(isolate, tpl->GetFunction());
 
     // set the prototype so it can be used for typechecking
-    Local<Object> obj = tpl->GetFunction()->NewInstance();
+    auto context = isolate->GetCurrentContext();
+    Local<Object> obj = tpl->GetFunction()->NewInstance(context).ToLocalChecked();
     prototype.Reset(isolate, obj->GetPrototype());
 
     exports->Set(String::NewFromUtf8(isolate, "Int64"), tpl->GetFunction());

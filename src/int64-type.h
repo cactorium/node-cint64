@@ -54,7 +54,8 @@ private:
         v8::Handle<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
 
         auto cons = v8::Local<v8::Function>::New(isolate, constructor);
-        auto ret = cons->NewInstance(argc, argv);
+        auto context = isolate->GetCurrentContext();
+        auto ret = cons->NewInstance(context, argc, argv).ToLocalChecked();
 
         Int64Wrapper* retInner = ObjectWrap::Unwrap<Int64Wrapper>(ret);
         retInner->val = result;
@@ -73,7 +74,8 @@ private:
         v8::Handle<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
 
         auto cons = v8::Local<v8::Function>::New(isolate, constructor);
-        auto ret = cons->NewInstance(argc, argv);
+        auto context = isolate->GetCurrentContext();
+        auto ret = cons->NewInstance(context, argc, argv).ToLocalChecked();
 
         Int64Wrapper* retInner = ObjectWrap::Unwrap<Int64Wrapper>(ret);
         retInner->val = result;

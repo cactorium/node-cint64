@@ -5,7 +5,7 @@
 using namespace v8;
 
 extern "C" {
-    static void Init(Handle<Object> exports) {
+    static void Init(Handle<Object> exports, Handle<Object> module) {
         Int64Wrapper::Init(exports);
     }
 }
