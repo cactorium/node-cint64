@@ -78,6 +78,15 @@ describe('Int64', function() {
         });
     });
 
+    describe('#toString()', function() {
+        it('should return the string value of its operands', function() {
+            assert.equal('ff', new Int64(255).toString(16));
+            assert.equal('17', new Int64(17).toString(10));
+            assert.equal('111', new Int64(7).toString());
+        });
+    });
+
+
     describe('#intoBuffer()', function() {
         // TODO: Refactor out initialization code
         it('should copy the integer into a Buffer', function() {
