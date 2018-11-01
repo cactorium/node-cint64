@@ -217,7 +217,7 @@ void Int64Wrapper::ToString(const FunctionCallbackInfo<Value>& args) {
     const Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
     auto toChar = [](int64_t val) -> char {
         const char alphaArray[] = 
-            "0123456789acdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/";
+            "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/";
         assert(val >= 0 && (unsigned) val < sizeof(alphaArray));
         return alphaArray[val];
     };
