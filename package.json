@@ -1,6 +1,6 @@
 {
   "name": "node-cint64",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Providing native 64-bit integer arithmetic for Node!",
   "main": "./build/Release/node-cint64",
   "scripts": {
