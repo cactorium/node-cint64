@@ -4,18 +4,33 @@
 
 #include <node_buffer.h>
 
-using namespace v8;
+namespace node_cint64 {
+
+using v8::Local;
+using v8::Object;
+using v8::Isolate;
+using v8::Number;
+using v8::Function;
+using v8::Exception;
+using v8::FunctionCallbackInfo;
+using v8::Value;
+using v8::HandleScope;
+using v8::FunctionTemplate;
+using v8::Local;
+using v8::Persistent;
+using v8::String;
 
 Persistent<Function> Int64Wrapper::constructor;
 Persistent<Value> Int64Wrapper::prototype;
 
-void Int64Wrapper::Init(Handle<Object> exports) {
+void Int64Wrapper::Init(Local<Object> exports) {
     // FIXME: GetCurrent() may be deprecated soonish
     Isolate* isolate = Isolate::GetCurrent();
+    auto context = isolate->GetCurrentContext();
     HandleScope scope(isolate);
 
     Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, Int64Wrapper::New);
-    tpl->SetClassName(String::NewFromUtf8(isolate, "Int64"));
+    tpl->SetClassName(String::NewFromUtf8(isolate, "Int64", v8::NewStringType::kNormal).ToLocalChecked());
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
     // add methods here
@@ -46,14 +61,17 @@ void Int64Wrapper::Init(Handle<Object> exports) {
     NODE_SET_PROTOTYPE_METHOD(tpl, "intoBuffer", Int64Wrapper::IntoBuffer);
 
     // set the constructor so we can use it
-    constructor.Reset(isolate, tpl->GetFunction());
+    constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
 
     // set the prototype so it can be used for typechecking
-    auto context = isolate->GetCurrentContext();
-    Local<Object> obj = tpl->GetFunction()->NewInstance(context).ToLocalChecked();
+    Local<Object> obj = tpl->GetFunction(context).ToLocalChecked()->NewInstance(context).ToLocalChecked();
     prototype.Reset(isolate, obj->GetPrototype());
 
-    exports->Set(String::NewFromUtf8(isolate, "Int64"), tpl->GetFunction());
+    auto _ = exports->Set(
+        context,
+        String::NewFromUtf8(isolate, "Int64", v8::NewStringType::kNormal).ToLocalChecked(),
+        tpl->GetFunction(context).ToLocalChecked());
+    (void) _;
 }
 
 Int64Wrapper::Int64Wrapper(int64_t v) : val(v) {}
@@ -61,12 +79,14 @@ Int64Wrapper::~Int64Wrapper() {}
 
 void Int64Wrapper::New(const FunctionCallbackInfo<Value> &args) {
     Isolate* isolate = args.GetIsolate();
+    auto context = isolate->GetCurrentContext();
     HandleScope scope(isolate);
 
     if (!args.IsConstructCall()) {
         isolate->ThrowException(Exception::TypeError(
                 String::NewFromUtf8(isolate,
-                    "Use the new operator to create instances of this object."))
+                    "Use the new operator to create instances of this object.",
+                    v8::NewStringType::kNormal).ToLocalChecked())
             );
         return;
     }
@@ -82,7 +102,7 @@ void Int64Wrapper::New(const FunctionCallbackInfo<Value> &args) {
                 val = val | (tmp << (i << 3));
             }
         } else {
-            val = args[0]->IsUndefined()? 0 : args[0]->NumberValue();
+            val = args[0]->IsUndefined()? 0 : args[0]->NumberValue(context).ToChecked();
         }
     }
 
@@ -212,6 +232,7 @@ void Int64Wrapper::ToNumber(const FunctionCallbackInfo<Value>& args) {
 
 void Int64Wrapper::ToString(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
+    auto context = isolate->GetCurrentContext();
     HandleScope scope(isolate);
 
     const Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
@@ -225,7 +246,7 @@ void Int64Wrapper::ToString(const FunctionCallbackInfo<Value>& args) {
     int64_t tmp = self->val;
     int64_t base = 10;
     if (args.Length() > 0 && args[0]->IsNumber()) {
-        base = args[0]->ToInteger()->Value();
+        base = args[0]->ToInteger(context).ToLocalChecked()->Value();
         if (base < 0) base = -base;
         if (base > 64) base = 64;
         if (base == 0) base = 10;
@@ -258,17 +279,20 @@ void Int64Wrapper::ToString(const FunctionCallbackInfo<Value>& args) {
         idx++;
     }
 
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, res));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, res, v8::NewStringType::kNormal).ToLocalChecked());
 }
 
 void Int64Wrapper::IntoBuffer(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
+    auto context = isolate->GetCurrentContext();
     HandleScope scope(isolate);
 
     const Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
     if (!node::Buffer::HasInstance(args[0])) {
         isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                        isolate, "first argument must be a Buffer")));
+                        isolate,
+                        "first argument must be a Buffer",
+                        v8::NewStringType::kNormal).ToLocalChecked()));
         return;
     }
 
@@ -276,42 +300,52 @@ void Int64Wrapper::IntoBuffer(const FunctionCallbackInfo<Value>& args) {
 
     if (args.Length() > 1) {
         if (args[1]->IsNumber()) {
-            auto argDstOffset = args[1]->ToInteger()->Value();
+            auto argDstOffset = args[1]->ToInteger(context).ToLocalChecked()->Value();
             if (argDstOffset < 0) {
                 isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                    isolate, "second argument must be greater than or equal to zero")));
+                          isolate,
+                          "second argument must be greater than or equal to zero",
+                          v8::NewStringType::kNormal).ToLocalChecked()));
                 return;
             }
             dstOffset = argDstOffset;
         } else {
             isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                        isolate, "second argument must be a Number")));
+                        isolate,
+                        "second argument must be a Number",
+                        v8::NewStringType::kNormal).ToLocalChecked()));
             return;
         }
     }
 
     if (args.Length() > 2) {
         if (args[2]->IsNumber()) {
-            auto argSrcOffset = args[2]->ToInteger()->Value();
+            auto argSrcOffset = args[2]->ToInteger(context).ToLocalChecked()->Value();
             if (argSrcOffset < 0) {
                 isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                            isolate, "third argument must be greater than or equal to zero")));
+                        isolate,
+                        "third argument must be greater than or equal to zero",
+                        v8::NewStringType::kNormal).ToLocalChecked()));
                 return;
             }
             srcOffset = argSrcOffset;
         } else {
             isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                        isolate, "third argument must be a Number")));
+                        isolate,
+                        "third argument must be a Number",
+                        v8::NewStringType::kNormal).ToLocalChecked()));
             return;
         }
     }
 
     if (args.Length() > 3) {
         if (args[3]->IsNumber()) {
-            srcEnd = args[3]->ToInteger()->Value();
+            srcEnd = args[3]->ToInteger(context).ToLocalChecked()->Value();
         } else {
             isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                        isolate, "third argument must be a Number")));
+                        isolate,
+                        "third argument must be a Number",
+                        v8::NewStringType::kNormal).ToLocalChecked()));
             return;
         }
     }
@@ -324,4 +358,6 @@ void Int64Wrapper::IntoBuffer(const FunctionCallbackInfo<Value>& args) {
         int64_t tmp = self->val & (mask << ((i + srcOffset) << 3));
         target[dstOffset + i] = static_cast<char>(tmp >> ((i + srcOffset) << 3));
     }
+}
+
 }

@@ -6,10 +6,12 @@
 #include <node.h>
 #include <node_object_wrap.h>
 
+namespace node_cint64 {
+
 class Int64Wrapper : public node::ObjectWrap {
 public:
     static v8::Persistent<v8::Function> constructor;
-    static void Init(v8::Handle<v8::Object> exports);
+    static void Init(v8::Local<v8::Object> exports);
 
 private:
     static v8::Persistent<v8::Value> prototype;
@@ -24,24 +26,48 @@ private:
         v8::HandleScope scope(isolate);
 
         if (args.Length() < 1) {
-            isolate->ThrowException(v8::Exception::TypeError(
-                        v8::String::NewFromUtf8(isolate, "wrong number of arguments"))
-                    );
+          v8::MaybeLocal<v8::String> maybe_string = v8::String::NewFromUtf8(
+              isolate,
+              "wrong number of arguments",
+              v8::NewStringType::kNormal);
+            isolate->ThrowException(v8::Exception::TypeError(maybe_string.ToLocalChecked()));
             return;
         }
         const Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
-        const Int64Wrapper* other;
+        const Int64Wrapper* other = nullptr;
         bool isAllocated = false;
 
-        if (args[0]->IsObject() && args[0]->ToObject()->GetPrototype() == prototype) {
-            other = ObjectWrap::Unwrap<Int64Wrapper>(args[0]->ToObject());
+        auto context = isolate->GetCurrentContext();
+
+        auto throw_exception = [&]() {
+          v8::MaybeLocal<v8::String> maybe_string = v8::String::NewFromUtf8(
+              isolate,
+              "argument must be a number or a int64 object",
+              v8::NewStringType::kNormal);
+            isolate->ThrowException(v8::Exception::TypeError(maybe_string.ToLocalChecked()));
+        };
+
+        if (args[0]->IsObject()) {
+            auto maybe_other = args[0]->ToObject(context);
+            v8::Local<v8::Object> local_other;
+            if (maybe_other.ToLocal(&local_other) && local_other->GetPrototype() == prototype) {
+              other = ObjectWrap::Unwrap<Int64Wrapper>(local_other);
+            } else {
+              throw_exception();
+              return;
+            }
         } else if (args[0]->IsNumber()) {
-            other = new Int64Wrapper(args[0]->ToInteger()->Value());
-            isAllocated = true;
+            auto maybe_other = args[0]->ToInteger(context);
+            v8::Local<v8::Integer> local_other;
+            if (maybe_other.ToLocal(&local_other)) {
+              other = new Int64Wrapper(local_other->Value());
+              isAllocated = true;
+            } else {
+              throw_exception();
+              return;
+            }
         } else {
-            isolate->ThrowException(v8::Exception::TypeError(
-                        v8::String::NewFromUtf8(isolate, "argument must be a number or a int64 object"))
-                    );
+            throw_exception();
             return;
         }
 
@@ -51,10 +77,9 @@ private:
         }
         
         constexpr unsigned argc = 1;
-        v8::Handle<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
+        v8::Local<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
 
         auto cons = v8::Local<v8::Function>::New(isolate, constructor);
-        auto context = isolate->GetCurrentContext();
         auto ret = cons->NewInstance(context, argc, argv).ToLocalChecked();
 
         Int64Wrapper* retInner = ObjectWrap::Unwrap<Int64Wrapper>(ret);
@@ -71,7 +96,7 @@ private:
         const int64_t result = f(*self);
         
         constexpr unsigned argc = 1;
-        v8::Handle<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
+        v8::Local<v8::Value> argv[argc] = { v8::Number::New(isolate, 0) };
 
         auto cons = v8::Local<v8::Function>::New(isolate, constructor);
         auto context = isolate->GetCurrentContext();
@@ -86,20 +111,43 @@ private:
             F f, const v8::FunctionCallbackInfo<v8::Value>& args) {
         v8::Isolate* isolate = args.GetIsolate();
         v8::HandleScope scope(isolate);
+        auto context = isolate->GetCurrentContext();
 
         const Int64Wrapper* self = ObjectWrap::Unwrap<Int64Wrapper>(args.Holder());
         const Int64Wrapper* other;
         bool isAllocated = false;
 
-        if (args[0]->IsObject() && args[0]->ToObject()->GetPrototype() == prototype) {
-            other = ObjectWrap::Unwrap<Int64Wrapper>(args[0]->ToObject());
+        auto throw_exception = [&]() {
+          v8::MaybeLocal<v8::String> maybe_string = v8::String::NewFromUtf8(
+              isolate,
+              "argument must be a number or a int64 object",
+              v8::NewStringType::kNormal);
+            isolate->ThrowException(v8::Exception::TypeError(maybe_string.ToLocalChecked()));
+        };
+
+        if (args[0]->IsObject()) {
+            auto maybe_other = args[0]->ToObject(context);
+
+            v8::Local<v8::Object> local_other;
+            if (maybe_other.ToLocal(&local_other) && local_other->GetPrototype() == prototype) {
+              other = ObjectWrap::Unwrap<Int64Wrapper>(local_other);
+            } else {
+              throw_exception();
+              return;
+            }
         } else if (args[0]->IsNumber()) {
-            other = new Int64Wrapper(args[0]->ToInteger()->Value());
-            isAllocated = true;
+            auto maybe_other = args[0]->ToInteger(context);
+
+            v8::Local<v8::Integer> local_other;
+            if (maybe_other.ToLocal(&local_other)) {
+              other = new Int64Wrapper(local_other->Value());
+              isAllocated = true;
+            } else {
+              throw_exception();
+              return;
+            }
         } else {
-            isolate->ThrowException(v8::Exception::TypeError(
-                        v8::String::NewFromUtf8(isolate, "argument must be a number or a int64 object"))
-                    );
+            throw_exception();
             return;
         }
 
@@ -138,5 +186,7 @@ private:
 
     int64_t val;
 };
+
+}
 
 #endif

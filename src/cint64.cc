@@ -2,12 +2,15 @@
 
 #include "int64-type.h"
 
-using namespace v8;
+namespace node_cint64 {
 
-extern "C" {
-    static void Init(Handle<Object> exports, Handle<Object> module) {
-        Int64Wrapper::Init(exports);
-    }
+using v8::Local;
+using v8::Object;
+
+void Init(Local<Object> exports) {
+  Int64Wrapper::Init(exports);
 }
 
-NODE_MODULE(cint64, Init);
+NODE_MODULE(cint64, Init)
+
+}
