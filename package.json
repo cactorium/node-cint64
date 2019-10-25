@@ -3,6 +3,7 @@
   "version": "3.0.0",
   "description": "Providing native 64-bit integer arithmetic for Node!",
   "main": "./build/Release/node-cint64",
+  "types": "./node-cint64.d.ts",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha"
   },
