@@ -21,7 +21,7 @@ using v8::Persistent;
 using v8::String;
 
 Persistent<Function> Int64Wrapper::constructor;
-Persistent<Value> Int64Wrapper::prototype;
+Persistent<FunctionTemplate> Int64Wrapper::constructorTemplate;
 
 void Int64Wrapper::Init(Local<Object> exports) {
     // FIXME: GetCurrent() may be deprecated soonish
@@ -63,9 +63,8 @@ void Int64Wrapper::Init(Local<Object> exports) {
     // set the constructor so we can use it
     constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
 
-    // set the prototype so it can be used for typechecking
-    Local<Object> obj = tpl->GetFunction(context).ToLocalChecked()->NewInstance(context).ToLocalChecked();
-    prototype.Reset(isolate, obj->GetPrototype());
+    // remember the template so operands can be type-checked with HasInstance()
+    constructorTemplate.Reset(isolate, tpl);
 
     auto _ = exports->Set(
         context,

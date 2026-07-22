@@ -14,11 +14,17 @@ public:
     static void Init(v8::Local<v8::Object> exports);
 
 private:
-    static v8::Persistent<v8::Value> prototype;
+    static v8::Persistent<v8::FunctionTemplate> constructorTemplate;
     explicit Int64Wrapper(int64_t v);
     ~Int64Wrapper();
 
     static void New(const v8::FunctionCallbackInfo<v8::Value> &args);
+
+    // True only for objects actually constructed from the FunctionTemplate.
+    static bool HasInstance(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+        return v8::Local<v8::FunctionTemplate>::New(isolate, constructorTemplate)
+            ->HasInstance(value);
+    }
 
     template <typename F> static void wrapBinaryOp(
             F f, const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -47,15 +53,8 @@ private:
             isolate->ThrowException(v8::Exception::TypeError(maybe_string.ToLocalChecked()));
         };
 
-        if (args[0]->IsObject()) {
-            auto maybe_other = args[0]->ToObject(context);
-            v8::Local<v8::Object> local_other;
-            if (maybe_other.ToLocal(&local_other) && local_other->GetPrototype() == prototype) {
-              other = ObjectWrap::Unwrap<Int64Wrapper>(local_other);
-            } else {
-              throw_exception();
-              return;
-            }
+        if (HasInstance(isolate, args[0])) {
+            other = ObjectWrap::Unwrap<Int64Wrapper>(args[0].As<v8::Object>());
         } else if (args[0]->IsNumber()) {
             auto maybe_other = args[0]->ToInteger(context);
             v8::Local<v8::Integer> local_other;
@@ -125,16 +124,8 @@ private:
             isolate->ThrowException(v8::Exception::TypeError(maybe_string.ToLocalChecked()));
         };
 
-        if (args[0]->IsObject()) {
-            auto maybe_other = args[0]->ToObject(context);
-
-            v8::Local<v8::Object> local_other;
-            if (maybe_other.ToLocal(&local_other) && local_other->GetPrototype() == prototype) {
-              other = ObjectWrap::Unwrap<Int64Wrapper>(local_other);
-            } else {
-              throw_exception();
-              return;
-            }
+        if (HasInstance(isolate, args[0])) {
+            other = ObjectWrap::Unwrap<Int64Wrapper>(args[0].As<v8::Object>());
         } else if (args[0]->IsNumber()) {
             auto maybe_other = args[0]->ToInteger(context);
 
